@@ -25,7 +25,7 @@ const announcementSlides: AnnouncementSlide[] = [
   },
   {
     id: 2,
-    image: "/announcement-2.jpg", 
+    image: "/announcement-2.jpg",
     title: "1 Refer = $1000 Bonus",
     description: "Invite 1 friend and earn up to $1000 bonus instantly. Simple, fast and profitable. Start earning now!",
     buttonText: "Start Referring",
@@ -71,7 +71,7 @@ export function AnnouncementDialog() {
   };
 
   const prevSlide = () => {
-    setCurrentSlide((prev) => 
+    setCurrentSlide((prev) =>
       prev === 0 ? announcementSlides.length - 1 : prev - 1
     );
   };
@@ -84,7 +84,7 @@ export function AnnouncementDialog() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent 
+      <DialogContent
         className="max-w-[90vw] sm:max-w-lg md:max-w-xl p-0 gap-0 bg-[#2a2a2a] border-[#444] overflow-hidden"
         showCloseButton={false}
       >
@@ -111,7 +111,7 @@ export function AnnouncementDialog() {
                 {/* Placeholder for promotional image */}
                 <div className="text-center p-4">
                   <div className="text-4xl sm:text-5xl font-bold mb-2 text-yellow-400">
-                    GK222
+                    JK222
                   </div>
                   <div className="text-xl sm:text-2xl font-bold">
                     {currentAnnouncement.title}
@@ -170,11 +170,10 @@ export function AnnouncementDialog() {
               <button
                 key={index}
                 onClick={() => goToSlide(index)}
-                className={`h-2 rounded-full transition-all duration-300 ${
-                  index === currentSlide
+                className={`h-2 rounded-full transition-all duration-300 ${index === currentSlide
                     ? "w-8 bg-white"
                     : "w-2 bg-white/40 hover:bg-white/60"
-                }`}
+                  }`}
               />
             ))}
           </div>

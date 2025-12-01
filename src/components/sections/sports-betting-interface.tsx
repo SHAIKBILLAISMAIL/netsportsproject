@@ -330,7 +330,7 @@ const MessageNotification = () => {
       <div className="bg-gradient-to-r from-orange-600/20 via-orange-500/20 to-orange-600/20 border border-orange-500/40 rounded-lg p-3 flex items-center gap-3 hover:border-orange-500/60 transition-colors cursor-pointer">
         <MessageSquare className="w-5 h-5 text-orange-500 flex-shrink-0" />
         <p className="text-sm text-foreground flex-1">
-          GK222 যদি জোনার আপডেট এবং স্বর্ণ থাকে, তাহলে ঘরের *
+          JK222 যদি জোনার আপডেট এবং স্বর্ণ থাকে, তাহলে ঘরের *
         </p>
       </div>
     </div>

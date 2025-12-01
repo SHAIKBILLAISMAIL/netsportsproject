@@ -26,7 +26,7 @@ export default function InvitePage() {
   const { data: session, isPending } = useSession();
   const [copied, setCopied] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
-  const [referralCode, setReferralCode] = useState("GK222ABC123");
+  const [referralCode, setReferralCode] = useState("JK222ABC123");
   const [referralLink, setReferralLink] = useState("");
   const [stats, setStats] = useState({
     totalInvited: 0,
@@ -73,7 +73,7 @@ export default function InvitePage() {
   };
 
   const handleShare = (platform: string) => {
-    const shareText = `Join me on GK222 and earn ৳1000 bonus! Use my referral code: ${referralCode}`;
+    const shareText = `Join me on JK222 and earn ৳1000 bonus! Use my referral code: ${referralCode}`;
     const encodedText = encodeURIComponent(shareText);
     const encodedLink = encodeURIComponent(referralLink);
 
@@ -90,7 +90,7 @@ export default function InvitePage() {
         shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodedLink}`;
         break;
       case "email":
-        shareUrl = `mailto:?subject=Join GK222&body=${encodedText}%20${encodedLink}`;
+        shareUrl = `mailto:?subject=Join JK222&body=${encodedText}%20${encodedLink}`;
         break;
     }
 
@@ -110,7 +110,7 @@ export default function InvitePage() {
   return (
     <div className="min-h-screen bg-background">
       <HeaderNavigation />
-      
+
       <main className="container mx-auto px-4 py-8 pb-32 md:pb-8 max-w-4xl">
         {/* Hero Section */}
         <div className="text-center mb-8">
@@ -328,7 +328,7 @@ export default function InvitePage() {
             </li>
             <li className="flex items-start">
               <span className="text-[#ff8c00] mr-2">•</span>
-              <span>GK222 reserves the right to modify or terminate the referral program at any time</span>
+              <span>JK222 reserves the right to modify or terminate the referral program at any time</span>
             </li>
             <li className="flex items-start">
               <span className="text-[#ff8c00] mr-2">•</span>
