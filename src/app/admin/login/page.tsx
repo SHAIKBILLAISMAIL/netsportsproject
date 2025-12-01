@@ -15,54 +15,92 @@ export default function AdminLoginPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isLogin, setIsLogin] = useState(true);
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [secretKey, setSecretKey] = useState("");
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!email || !password) {
-      toast.error("Please enter both email and password");
-      return;
+
+    if (isLogin) {
+      if (!email || !password) {
+        toast.error("Please enter both email and password");
+        return;
+      }
+    } else {
+      if (!email || !password || !name || !phone || !secretKey) {
+        toast.error("Please fill in all fields including the Secret Key");
+        return;
+      }
+      // Simple security check for demo purposes
+      if (secretKey !== "admin123" && secretKey !== "nicebet2025") {
+        toast.error("Invalid Admin Secret Key. You are not authorized to create an admin account.");
+        return;
+      }
     }
 
     try {
       setLoading(true);
-      
-      const { data, error } = await authClient.signIn.email({
-        email,
-        password,
-        callbackURL: "/admin",
-      });
 
-      if (error?.code) {
-        toast.error("Invalid admin credentials. Please check your email and password.");
-        return;
-      }
+      if (isLogin) {
+        // LOGIN LOGIC
+        const { data, error } = await authClient.signIn.email({
+          email,
+          password,
+          callbackURL: "/admin",
+        });
 
-      // Verify admin role by fetching user balance
-      const token = localStorage.getItem("bearer_token");
-      const balanceRes = await fetch("/api/user/balance", {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-
-      if (balanceRes.ok) {
-        const balanceData = await balanceRes.json();
-        
-        if (balanceData.role !== "admin") {
-          // Not an admin, sign out
-          await authClient.signOut();
-          toast.error("Access denied. Admin privileges required.");
+        if (error?.code) {
+          toast.error("Invalid credentials. Please check your email and password.");
+          setLoading(false);
           return;
         }
 
-        toast.success("Admin login successful!");
-        router.push("/admin");
+        // Verify admin role
+        const token = localStorage.getItem("bearer_token");
+        const balanceRes = await fetch("/api/user/balance", {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+
+        if (balanceRes.ok) {
+          const balanceData = await balanceRes.json();
+          if (balanceData.role !== "admin") {
+            await authClient.signOut();
+            toast.error("Access denied. Admin privileges required.");
+            setLoading(false);
+            return;
+          }
+          toast.success("Admin login successful!");
+          // Force a hard navigation to ensure session state is fresh
+          window.location.href = "/admin";
+        } else {
+          window.location.href = "/admin";
+        }
       } else {
-        await authClient.signOut();
-        toast.error("Failed to verify admin access");
+        // SIGN UP LOGIC
+        const { data, error } = await authClient.signUp.email({
+          email,
+          password,
+          name,
+          callbackURL: "/admin",
+          // @ts-ignore
+          role: "admin",
+          phoneNumber: phone
+        });
+
+        if (error) {
+          toast.error(error.message || "Failed to create admin account");
+          setLoading(false);
+          return;
+        }
+
+        toast.success("Admin account created successfully!");
+        // Force a hard navigation to ensure session state is fresh
+        window.location.href = "/admin";
       }
     } catch (error: any) {
-      toast.error(error?.message || "Login failed. Please try again.");
-    } finally {
+      toast.error(error?.message || "Authentication failed. Please try again.");
       setLoading(false);
     }
   };
@@ -77,13 +115,54 @@ export default function AdminLoginPage() {
           </div>
           <h1 className="text-3xl font-bold mb-2">Admin Portal</h1>
           <p className="text-muted-foreground">
-            Secure access for administrators only
+            {isLogin ? "Secure access for administrators only" : "Create a new administrator account"}
           </p>
         </div>
 
-        {/* Login Form */}
+        {/* Auth Form */}
         <div className="rounded-lg border border-border bg-card p-8 shadow-lg">
-          <form onSubmit={handleLogin} className="space-y-6">
+          <form onSubmit={handleAuth} className="space-y-4">
+            {!isLogin && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="name">Full Name</Label>
+                  <Input
+                    id="name"
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Admin Name"
+                    disabled={loading}
+                    className="h-10"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone Number</Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="+1234567890"
+                    disabled={loading}
+                    className="h-10"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="secret" className="text-red-500 font-medium">Admin Secret Key</Label>
+                  <Input
+                    id="secret"
+                    type="password"
+                    value={secretKey}
+                    onChange={(e) => setSecretKey(e.target.value)}
+                    placeholder="Enter secret key to authorize"
+                    disabled={loading}
+                    className="h-10 border-red-200 focus-visible:ring-red-500"
+                  />
+                </div>
+              </>
+            )}
+
             <div className="space-y-2">
               <Label htmlFor="email" className="flex items-center gap-2">
                 <Mail size={16} />
@@ -96,7 +175,7 @@ export default function AdminLoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="admin@nicebet.com"
                 disabled={loading}
-                className="h-11"
+                className="h-10"
                 autoComplete="email"
               />
             </div>
@@ -112,10 +191,10 @@ export default function AdminLoginPage() {
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your admin password"
+                  placeholder="••••••••"
                   disabled={loading}
-                  className="h-11 pr-10"
-                  autoComplete="off"
+                  className="h-10 pr-10"
+                  autoComplete={isLogin ? "current-password" : "new-password"}
                 />
                 <button
                   type="button"
@@ -129,57 +208,56 @@ export default function AdminLoginPage() {
 
             <Button
               type="submit"
+              className="w-full h-11 text-base font-semibold bg-green-600 hover:bg-green-700 text-white mt-2"
               disabled={loading}
-              className="w-full h-11 text-base font-semibold"
             >
               {loading ? (
                 <span className="flex items-center gap-2">
-                  <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                      fill="none"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
-                  Signing in...
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  {isLogin ? "Verifying..." : "Creating Account..."}
                 </span>
               ) : (
-                <span className="flex items-center justify-center gap-2">
+                <span className="flex items-center gap-2">
                   <Shield size={18} />
-                  Sign In as Admin
+                  {isLogin ? "SIGN IN AS ADMIN" : "CREATE ADMIN ACCOUNT"}
                 </span>
               )}
             </Button>
           </form>
 
-          {/* Demo Credentials */}
-          <div className="mt-6 pt-6 border-t border-border">
-            <div className="rounded-md bg-muted/30 p-4 text-sm">
-              <p className="font-semibold mb-2 flex items-center gap-2 text-primary">
-                <Shield size={14} />
-                Demo Admin Credentials:
-              </p>
-              <div className="space-y-1 text-muted-foreground">
-                <p>Email: <span className="font-mono text-foreground">admin@nicebet.com</span></p>
-                <p>Password: <span className="font-mono text-foreground">admin123</span></p>
-              </div>
-            </div>
+          {/* Toggle Login/Signup */}
+          <div className="mt-6 text-center">
+            <p className="text-sm text-muted-foreground">
+              {isLogin ? "Need to create a new admin?" : "Already have an admin account?"}
+              <button
+                type="button"
+                onClick={() => setIsLogin(!isLogin)}
+                className="ml-2 text-primary hover:underline font-medium"
+              >
+                {isLogin ? "Create Admin" : "Sign In"}
+              </button>
+            </p>
           </div>
 
-          {/* Security Notice */}
+          {/* Demo Credentials Hint (Only on Login) */}
+          {isLogin && (
+            <div className="mt-6 p-4 rounded-md bg-muted/50 border border-border/50">
+              <div className="flex items-center gap-2 mb-2 text-green-500 font-medium text-sm">
+                <Shield size={14} />
+                <span>Demo Admin Credentials:</span>
+              </div>
+              <div className="space-y-1 text-xs text-muted-foreground font-mono">
+                <p>Email: <span className="text-foreground">admin@nicebet.com</span></p>
+                <p>Password: <span className="text-foreground">admin123</span></p>
+              </div>
+            </div>
+          )}
+
           <div className="mt-4 text-center">
-            <p className="text-xs text-muted-foreground">
-              🔒 This is a secure admin area. All activities are logged.
-            </p>
+            <div className="flex items-center justify-center gap-2 text-xs text-yellow-500/80">
+              <Lock size={12} />
+              <span>This is a secure admin area. All activities are logged.</span>
+            </div>
           </div>
         </div>
 

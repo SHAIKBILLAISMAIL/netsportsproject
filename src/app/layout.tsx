@@ -5,7 +5,7 @@ import ErrorReporter from "@/components/ErrorReporter";
 import Script from "next/script";
 
 import InstallPWA from "@/components/sections/install-pwa";
-import LiveChat from "@/components/sections/live-chat";
+import SocialFloatingButtons from "@/components/sections/social-floating-buttons";
 
 export const metadata: Metadata = {
   title: "NiceBet - Sports Betting & Casino",
@@ -34,7 +34,7 @@ export default function RootLayout({
         />
         {children}
         <InstallPWA />
-        <LiveChat />
+        <SocialFloatingButtons />
         <VisualEditsMessenger />
       </body>
     </html>

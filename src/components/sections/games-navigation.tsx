@@ -10,8 +10,8 @@ export const GamesNavigation = () => {
     const [activeId, setActiveId] = useState('sports');
 
     const items = [
-        { id: 'sports', label: 'Sports', icon: Trophy, href: '/' }, // Home is Sports
-        { id: 'lobby', label: 'Games lobby', icon: Puzzle, href: '/en/lobby' },
+        { id: 'lobby', label: 'Games lobby', icon: Puzzle, href: '/' },
+        { id: 'sports', label: 'Sports', icon: Trophy, href: '/en/sports' },
         { id: 'favorites', label: 'Favorites', icon: Heart, href: '/en/favorites' },
         { id: 'slots', label: 'Slots', icon: LayoutGrid, href: '/en/slots' },
         { id: 'live', label: 'Live', icon: Spade, href: '/en/live' },
@@ -24,7 +24,9 @@ export const GamesNavigation = () => {
 
     useEffect(() => {
         // Determine active ID based on pathname
-        if (pathname === '/' || pathname === '/en/sports') {
+        if (pathname === '/') {
+            setActiveId('lobby');
+        } else if (pathname === '/en/sports') {
             setActiveId('sports');
         } else {
             const activeItem = items.find(item => item.href !== '/' && pathname.startsWith(item.href));

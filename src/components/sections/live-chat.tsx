@@ -44,10 +44,10 @@ export default function LiveChat() {
         return (
             <button
                 onClick={() => setIsOpen(true)}
-                className="fixed bottom-6 right-6 z-50 bg-gradient-to-r from-primary to-purple-600 text-white rounded-full p-4 shadow-2xl hover:scale-110 transition-transform duration-200 animate-bounce"
+                className="fixed bottom-6 right-6 z-50 bg-gradient-to-r from-primary to-purple-600 text-white rounded-full p-4 shadow-2xl hover:scale-110 transition-transform duration-200"
             >
                 <MessageCircle className="h-6 w-6" />
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                     1
                 </span>
             </button>
@@ -97,8 +97,8 @@ export default function LiveChat() {
                                     >
                                         <div
                                             className={`max-w-[80%] rounded-lg p-3 ${msg.sender === 'user'
-                                                    ? 'bg-primary text-primary-foreground'
-                                                    : 'bg-muted text-foreground'
+                                                ? 'bg-primary text-primary-foreground'
+                                                : 'bg-muted text-foreground'
                                                 }`}
                                         >
                                             <p className="text-sm">{msg.text}</p>

@@ -25,7 +25,7 @@ export const AdminDashboard = () => {
       if (isPending) return;
 
       if (!session?.user) {
-        router.push("/login?redirect=/admin");
+        router.push("/admin/login");
         return;
       }
 

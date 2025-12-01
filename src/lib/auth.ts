@@ -17,7 +17,7 @@ export const auth = betterAuth({
 	},
 	plugins: [bearer()],
 	trustedOrigins: process.env.NODE_ENV === 'development'
-		? ["http://localhost:3000", "http://127.0.0.1:3000", "http://192.168.1.4:3000", "http://10.214.240.189:3000"]
+		? ["http://localhost:3000", "http://127.0.0.1:3000", "http://192.168.1.4:3000", "http://10.214.240.189:3000", "http://192.168.1.2:3000"]
 		: [process.env.BETTER_AUTH_URL || "http://localhost:3000"]
 });
 

@@ -63,11 +63,11 @@ export const HeaderNavigation = () => {
           <div className="flex items-center justify-between h-16">
             <Link href="/" className="flex items-center gap-2">
               <Image
-                src="https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/object/public/test-clones/16c2f736-4711-42f5-bec1-8d23c4be6c23-nicebet-com-lr/assets/svgs/logo-white-2.svg"
-                alt="Nicebet Logo"
-                width={120}
-                height={40}
-                className="h-8 w-auto"
+                src="/logo.jpg"
+                alt="JK222 Logo"
+                width={250}
+                height={80}
+                className="h-20 w-auto object-contain"
               />
             </Link>
 
@@ -131,6 +131,10 @@ export const HeaderNavigation = () => {
                 </>
               ) : (
                 <div className="flex items-center gap-2">
+                  <Link href="/admin/login" className="rounded-md border border-border bg-card px-4 py-1.5 text-sm font-medium transition-colors hover:bg-muted flex items-center gap-1">
+                    <Shield size={14} />
+                    Admin
+                  </Link>
                   <Link href="/login" className="rounded-md border border-border bg-card px-4 py-1.5 text-sm font-medium transition-colors hover:bg-muted">Login</Link>
                   <Link href="/register" className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90">Register</Link>
                 </div>

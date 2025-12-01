@@ -1,49 +1,56 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from 'next/server';
+import { db } from '@/db';
+import { user, userBalances } from '@/db/schema';
+import { desc, eq, sql, or, like } from 'drizzle-orm';
 
-// Mock users - mirrors AdminDashboard's initial mock structure
-const mockUsers = [
-  { id: 1, name: "John K", email: "john@example.com", role: "user", status: "active" },
-  { id: 2, name: "Mary P", email: "mary@example.com", role: "admin", status: "active" },
-  { id: 3, name: "Alex T", email: "alex@example.com", role: "agent", status: "pending" },
-  { id: 4, name: "Dina R", email: "dina@example.com", role: "user", status: "active" },
-  { id: 5, name: "Sam W", email: "sam@example.com", role: "user", status: "pending" },
-];
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const limit = Math.min(parseInt(searchParams.get('limit') ?? '50'), 100);
+    const offset = parseInt(searchParams.get('offset') ?? '0');
+    const search = searchParams.get('search');
 
-// Use a mutable in-memory array for mock CRUD
-let users = [...mockUsers];
+    let query = db
+      .select({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        image: user.image,
+        createdAt: user.createdAt,
+        role: userBalances.role,
+        coins: userBalances.coins,
+      })
+      .from(user)
+      .leftJoin(userBalances, eq(user.id, userBalances.userId));
 
-export async function GET() {
-  // Simulate network latency
-  await new Promise((r) => setTimeout(r, 300));
-  return NextResponse.json({ users });
-}
+    if (search) {
+      query = query.where(
+        or(
+          like(user.name, `%${search}%`),
+          like(user.email, `%${search}%`)
+        )
+      ) as any;
+    }
 
-export async function POST(req: Request) {
-  await new Promise((r) => setTimeout(r, 250));
-  const body = await req.json().catch(() => ({}));
-  const { name, email, role = "user", status = "active" } = body || {};
-  const id = users.length ? Math.max(...users.map((u) => u.id)) + 1 : 1;
-  const user = { id, name: name || `User ${id}`, email: email || `user${id}@example.com`, role, status };
-  users.push(user);
-  return NextResponse.json({ user });
-}
+    const results = await query
+      .orderBy(desc(user.createdAt))
+      .limit(limit)
+      .offset(offset);
 
-export async function PUT(req: Request) {
-  await new Promise((r) => setTimeout(r, 250));
-  const body = await req.json().catch(() => ({}));
-  const { id, ...updates } = body || {};
-  const idx = users.findIndex((u) => u.id === id);
-  if (idx === -1) return NextResponse.json({ error: "User not found" }, { status: 404 });
-  users[idx] = { ...users[idx], ...updates };
-  return NextResponse.json({ user: users[idx] });
-}
+    // Get total count
+    // Note: This is a simplified count, for full search support we'd need to duplicate the where clause
+    const totalResult = await db.select({ count: sql<number>`count(*)` }).from(user);
+    const total = totalResult[0]?.count ?? 0;
 
-export async function DELETE(req: Request) {
-  await new Promise((r) => setTimeout(r, 250));
-  const body = await req.json().catch(() => ({}));
-  const { id } = body || {};
-  const before = users.length;
-  users = users.filter((u) => u.id !== id);
-  const removed = users.length < before;
-  return NextResponse.json({ ok: removed });
+    return NextResponse.json({
+      users: results,
+      total,
+    });
+  } catch (error) {
+    console.error('GET users error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
 }

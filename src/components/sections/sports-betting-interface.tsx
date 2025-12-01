@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Goal, Dribbble, Trophy, Star, Search, Trash2, ShieldCheck, Menu, Pin, PinOff, Crown, Puzzle, Heart, LayoutGrid, Spade, Gamepad2, Bird, Club, Fish, Ticket, Gem } from 'lucide-react';
+import { Goal, Dribbble, Trophy, Star, Search, Trash2, ShieldCheck, Menu, Pin, PinOff, Crown, Puzzle, Heart, LayoutGrid, Spade, Gamepad2, Bird, Club, Fish, Ticket, Gem, MessageSquare } from 'lucide-react';
 
 // NOTE: The following imports are placeholders for shadcn/ui components.
 // Ensure you have these components set up in your project.
@@ -182,34 +182,80 @@ const DateSegments = ({ active, onChange }: { active: string; onChange: (v: stri
 
 // New: Partner/Sponsor logos marquee scrolling from right to left
 const PromotionalCards = () => {
-  // Add your promotional card URLs here
-  const promoCards: string[] = [
-    'https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/render/image/public/document-uploads/deposit-now.d0a010e0-1764351594771.png?width=8000&height=8000&resize=contain',
-    'https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/render/image/public/document-uploads/invite-friend.45f0732f-1764351594679.png?width=8000&height=8000&resize=contain',
-    'https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/render/image/public/document-uploads/promo-code.46231421-1764351594261.png?width=8000&height=8000&resize=contain',
+  // Card data with text and images
+  const cards = [
+    {
+      image: 'https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/render/image/public/document-uploads/deposit-now.d0a010e0-1764351594771.png?width=8000&height=8000&resize=contain',
+      line1: 'DEPOSIT',
+      line2: 'NOW!',
+      subtitle: 'GET MORE BONUS',
+      hasSeparator: true
+    },
+    {
+      image: 'https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/render/image/public/document-uploads/invite-friend.45f0732f-1764351594679.png?width=8000&height=8000&resize=contain',
+      line1: 'INVITE',
+      line2: 'FRIENDS',
+      subtitle: '',
+      hasSeparator: true
+    },
+    {
+      image: 'https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/render/image/public/document-uploads/promo-code.46231421-1764351594261.png?width=8000&height=8000&resize=contain',
+      line1: 'PROMO',
+      line2: 'CODE',
+      subtitle: '',
+      hasSeparator: true
+    },
   ];
-
-  // If no cards yet, don't render
-  if (promoCards.length === 0) return null;
 
   return (
     <div className="mb-4">
-      {/* Promotional Cards - Horizontal Side by Side */}
-      <div
-        className="flex gap-3 overflow-x-auto no-scrollbar"
-        style={{ touchAction: 'pan-x', overscrollBehaviorX: 'contain' }}
-      >
-        {promoCards.map((card, index) => (
+      {/* Promotional Cards - Grid Layout */}
+      <div className="grid grid-cols-3 gap-2 sm:gap-3">
+        {cards.map((card, index) => (
           <div
             key={index}
-            className="relative w-32 h-20 sm:w-40 sm:h-24 md:w-48 md:h-28 rounded-lg overflow-hidden hover:scale-105 transition-transform cursor-pointer flex-shrink-0"
+            className="relative w-full aspect-[3/2] rounded-xl overflow-hidden hover:scale-105 transition-transform cursor-pointer shadow-lg group"
           >
+            {/* Background Image */}
             <Image
-              src={card}
-              alt={`Promotion ${index + 1}`}
+              src={card.image}
+              alt={`${card.line1} ${card.line2}`}
               fill
-              className="object-cover"
+              className="object-cover transition-transform duration-500 group-hover:scale-110"
             />
+
+            {/* Subtle Gradient for text readability */}
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/40" />
+
+            {/* Text Content - Left Aligned */}
+            <div className="absolute inset-0 p-3 flex flex-col justify-center h-full pl-3 sm:pl-4">
+              <div className="flex flex-col leading-none">
+                <span className="text-[10px] sm:text-xs md:text-sm lg:text-base font-black text-white drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] uppercase tracking-wide">
+                  {card.line1}
+                </span>
+                <span className="text-[10px] sm:text-xs md:text-sm lg:text-base font-black text-white drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] uppercase tracking-wide mt-0.5">
+                  {card.line2}
+                </span>
+              </div>
+
+              {card.subtitle && (
+                <p className="text-[7px] sm:text-[9px] text-white mt-1 font-bold drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)] uppercase tracking-wider">
+                  {card.subtitle}
+                </p>
+              )}
+
+              {/* Horizontal Separator Line with Arrow */}
+              {card.hasSeparator && (
+                <div className="mt-2 flex items-center gap-1">
+                  <div className="w-12 h-[2px] bg-white shadow-sm" />
+                  <div className="w-4 h-4 rounded-full border-2 border-white flex items-center justify-center">
+                    <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         ))}
       </div>
@@ -217,52 +263,75 @@ const PromotionalCards = () => {
   );
 };
 
-// New: VIP Banner Component
+// New: VIP Banner Component - Thin sleek design with animated shine
 const VIPBanner = () => {
   return (
-    <div className="mb-6 px-2">
-      {/* VIP Banner - Capsule Shape with 3D Glossy Effect */}
-      <div className="relative h-16 rounded-full overflow-hidden bg-gradient-to-b from-[#4a4a4a] via-[#1a1a1a] to-[#000000] border-[3px] border-[#d4af37] shadow-[0_4px_10px_rgba(0,0,0,0.5),0_0_20px_rgba(212,175,55,0.2)]">
-
+    <div className="mb-4">
+      {/* VIP Banner - Thin capsule with animated shine */}
+      <div className="relative h-12 rounded-full overflow-hidden bg-black border-2 border-yellow-600/60 shadow-lg">
         {/* Quilted Diamond Pattern Background */}
         <div
-          className="absolute inset-0 opacity-30"
+          className="absolute inset-0 opacity-20"
           style={{
             backgroundImage: `
-              linear-gradient(45deg, transparent 48%, rgba(255,215,0,0.1) 49%, rgba(255,215,0,0.1) 51%, transparent 52%),
-              linear-gradient(-45deg, transparent 48%, rgba(255,215,0,0.1) 49%, rgba(255,215,0,0.1) 51%, transparent 52%)
+              linear-gradient(45deg, transparent 48%, rgba(255,255,255,0.05) 49%, rgba(255,255,255,0.05) 51%, transparent 52%),
+              linear-gradient(-45deg, transparent 48%, rgba(255,255,255,0.05) 49%, rgba(255,255,255,0.05) 51%, transparent 52%)
             `,
             backgroundSize: '20px 20px'
           }}
         />
 
-        {/* Glossy Highlight Top */}
-        <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/10 to-transparent rounded-t-full" />
-
-        {/* Shimmer Effect */}
-        <div className="absolute inset-0 z-10 pointer-events-none overflow-hidden rounded-full">
-          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+        {/* Animated Shine Effect - Moving from left to right */}
+        <div className="absolute inset-0 overflow-hidden rounded-full">
+          <div
+            className="absolute top-0 left-0 w-full h-full"
+            style={{
+              background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%)',
+              animation: 'shine 3s infinite linear',
+              transform: 'translateX(-100%)',
+            }}
+          />
         </div>
 
         {/* Content */}
-        <div className="relative flex items-center justify-center h-full px-4">
+        <div className="relative flex items-center justify-center h-full px-4 gap-2">
           {/* Crown Icon (Left) */}
-          <div className="mr-3 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
-            <Crown className="w-8 h-8 text-[#ffd700] fill-yellow-500/40" strokeWidth={2.5} />
-          </div>
+          <Crown className="w-6 h-6 text-yellow-500" strokeWidth={2} />
 
           {/* VIP Text */}
-          <h2 className="text-4xl font-black italic tracking-widest bg-gradient-to-b from-[#fffacd] via-[#ffd700] to-[#b8860b] bg-clip-text text-transparent drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] transform -skew-x-6">
+          <h2 className="text-2xl font-bold tracking-wider text-yellow-500">
             VIP
           </h2>
 
-          {/* Crown Icon (Right - Optional for symmetry/king look) */}
-          <div className="ml-3 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] transform scale-x-[-1]">
-            <Crown className="w-8 h-8 text-[#ffd700] fill-yellow-500/40" strokeWidth={2.5} />
-          </div>
-
-
+          {/* Crown Icon (Right) */}
+          <Crown className="w-6 h-6 text-yellow-500" strokeWidth={2} />
         </div>
+      </div>
+
+      {/* Keyframe animation for shine effect */}
+      <style jsx>{`
+        @keyframes shine {
+          0% {
+            transform: translateX(-100%);
+          }
+          100% {
+            transform: translateX(200%);
+          }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+// Message Notification Component - Shows below VIP
+const MessageNotification = () => {
+  return (
+    <div className="mb-4">
+      <div className="bg-gradient-to-r from-orange-600/20 via-orange-500/20 to-orange-600/20 border border-orange-500/40 rounded-lg p-3 flex items-center gap-3 hover:border-orange-500/60 transition-colors cursor-pointer">
+        <MessageSquare className="w-5 h-5 text-orange-500 flex-shrink-0" />
+        <p className="text-sm text-foreground flex-1">
+          GK222 যদি জোনার আপডেট এবং স্বর্ণ থাকে, তাহলে ঘরের *
+        </p>
       </div>
     </div>
   );
@@ -574,14 +643,16 @@ const BetSlip = ({ bets, updateStake, removeBet, clearBets }: { bets: Bet[], upd
 
 type SportsBettingInterfaceProps = {
   initialQuery?: { page?: string; sportId?: string };
+  showSportsContent?: boolean;
+  children?: React.ReactNode;
 };
 
-export default function SportsBettingInterface({ initialQuery }: SportsBettingInterfaceProps) {
+export default function SportsBettingInterface({ initialQuery, showSportsContent = true, children }: SportsBettingInterfaceProps) {
   // initialQuery is reserved for future enhancements (filtering by page/sportId)
   const [bets, setBets] = useState<Bet[]>([]);
   const [activeTab, setActiveTab] = useState<'sport' | 'esports' | 'virtuals'>('sport');
   const [activeCat, setActiveCat] = useState<string>(initialQuery?.sportId || 'football');
-  const [activeDate, setActiveDate] = useState<string>('today');
+
   const [sidebarPinned, setSidebarPinned] = useState<boolean>(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState<boolean>(false);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
@@ -778,29 +849,30 @@ export default function SportsBettingInterface({ initialQuery }: SportsBettingIn
           onTouchEnd={onTouchEnd}
         />
         {/* Desktop sidebar */}
-        <SportsSidebar pinned={sidebarPinned} onTogglePin={() => setSidebarPinned(p => !p)} />
+        {showSportsContent && (
+          <SportsSidebar pinned={sidebarPinned} onTogglePin={() => setSidebarPinned(p => !p)} />
+        )}
         {/* Mobile sheet sidebar */}
-        <Sheet open={mobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
-          <SheetContent side="left" className="p-0 w-72 sm:w-80 bg-card border-border">
-            <SportsSidebar pinned={true} onTogglePin={() => setSidebarPinned(p => !p)} mobile />
-          </SheetContent>
-        </Sheet>
+        {showSportsContent && (
+          <Sheet open={mobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
+            <SheetContent side="left" className="p-0 w-72 sm:w-80 bg-card border-border">
+              <SportsSidebar pinned={true} onTogglePin={() => setSidebarPinned(p => !p)} mobile />
+            </SheetContent>
+          </Sheet>
+        )}
         <main className="flex-grow p-6 overflow-y-auto">
           <Slideshow />
           <PromotionalCards />
           <VIPBanner />
+          <MessageNotification />
           <GamesNavigation />
-          <CategoryBar active={activeCat} onChange={setActiveCat} />
-          <LiveEvents />
-          <DateSegments active={activeDate} onChange={setActiveDate} />
-          <Highlights onBetSelect={handleBetSelect} activeBets={bets} upcomingMatches={upcomingMatches} />
-          <MatchList
-            onBetSelect={handleBetSelect}
-            activeBets={bets}
-            upcomingMatches={upcomingMatches}
-            loading={loadingOdds}
-            error={oddsError}
-          />
+          {showSportsContent && (
+            <>
+              <CategoryBar active={activeCat} onChange={setActiveCat} />
+              <LiveEvents />
+            </>
+          )}
+          {children}
         </main>
         <BetSlip
           bets={bets}

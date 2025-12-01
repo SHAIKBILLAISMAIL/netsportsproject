@@ -8,9 +8,9 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Button } from "@/components/ui/button";
 
 type NavLinkItem = {
-  href: string;
-  label: string;
-  badge?: string;
+    href: string;
+    label: string;
+    badge?: string;
 };
 
 const navigationLinks: NavLinkItem[] = [
@@ -42,20 +42,20 @@ const legalLinks: NavLinkItem[] = [
 ];
 
 const NavLinkList = ({ links }: { links: NavLinkItem[] }) => (
-  <ul className="flex flex-col gap-2.5 my-3">
-    {links.map((link) => (
-      <li key={link.href}>
-        <Link href={link.href} className="flex items-center text-sm text-neutral-400 hover:text-white transition-colors">
-          <span className="truncate">{link.label}</span>
-          {link.badge && (
-            <span className="ml-2 bg-red-600 text-[10px] uppercase font-bold text-white px-1.5 py-0.5 rounded">
-              {link.badge}
-            </span>
-          )}
-        </Link>
-      </li>
-    ))}
-  </ul>
+    <ul className="flex flex-col gap-2.5 my-3">
+        {links.map((link) => (
+            <li key={link.href}>
+                <Link href={link.href} className="flex items-center text-sm text-neutral-400 hover:text-white transition-colors">
+                    <span className="truncate">{link.label}</span>
+                    {link.badge && (
+                        <span className="ml-2 bg-red-600 text-[10px] uppercase font-bold text-white px-1.5 py-0.5 rounded">
+                            {link.badge}
+                        </span>
+                    )}
+                </Link>
+            </li>
+        ))}
+    </ul>
 );
 
 const Footer = () => {
@@ -70,7 +70,7 @@ const Footer = () => {
     return (
         <footer className="flex flex-col p-4 text-neutral-400 bg-[#1D1D1D]">
             <div className="max-w-7xl mx-auto px-4 w-full">
-                
+
                 <div className="flex justify-center mb-8">
                     <Button
                         onClick={handleScrollTop}
@@ -106,7 +106,7 @@ const Footer = () => {
                     <div className="flex flex-wrap -mx-3">
                         <div className="w-full lg:w-3/12 xl:w-2/12 px-3 mb-4">
                             <Link href="/">
-                                <Image src="https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/object/public/test-clones/16c2f736-4711-42f5-bec1-8d23c4be6c23-nicebet-com-lr/assets/svgs/logo-white-2.svg" alt="logo" width={140} height={40} className="w-auto h-auto"/>
+                                <Image src="/logo.jpg" alt="JK222 Logo" width={280} height={96} className="w-auto h-24 object-contain" />
                             </Link>
                         </div>
                         <div className="w-full lg:w-3/12 xl:w-2/12 px-3 mb-2">
@@ -129,7 +129,7 @@ const Footer = () => {
                 </div>
 
                 <hr className="my-8 hidden md:block border-neutral-800" />
-                
+
                 <div className="flex flex-col lg:flex-row justify-center lg:justify-between items-center my-8 gap-8 lg:gap-2">
                     <div className="flex items-center justify-center gap-4">
                         <div className="w-10 h-10 flex-shrink-0 flex items-center justify-center text-sm font-bold border-[3px] border-red-600 rounded-full bg-black text-white">18+</div>

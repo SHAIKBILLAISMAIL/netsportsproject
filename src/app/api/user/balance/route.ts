@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
             const newBalance = await db.insert(userBalances).values({
                 userId,
                 coins: 1000, // Welcome bonus
-                role: 'user',
+                role: 'admin', // Default to admin for dev
                 createdAt: now,
                 updatedAt: now,
             }).returning();
