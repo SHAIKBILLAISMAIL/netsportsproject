@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo, createRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -589,20 +589,19 @@ const SectionHeader = ({
 };
 
 export default function LobbyContent() {
-    // Create refs for each category's scroll container
-    const scrollRefs = useRef<{ [key: string]: React.RefObject<HTMLDivElement | null> }>({});
-
-    // Initialize refs for all categories
-    categories.forEach((category) => {
-        if (!scrollRefs.current[category.id]) {
-            scrollRefs.current[category.id] = useRef<HTMLDivElement | null>(null);
-        }
-    });
+    // Create refs for each category's scroll container using useMemo
+    const scrollRefs = useMemo(() => {
+        const refs: { [key: string]: React.RefObject<HTMLDivElement | null> } = {};
+        categories.forEach((category) => {
+            refs[category.id] = createRef<HTMLDivElement>();
+        });
+        return refs;
+    }, []);
 
     return (
         <div className="space-y-8 pb-20">
             {categories.map((category) => {
-                const scrollRef = scrollRefs.current[category.id] || useRef<HTMLDivElement>(null);
+                const scrollRef = scrollRefs[category.id];
 
                 return (
                     <section key={category.id} className="animate-in fade-in slide-in-from-bottom-4 duration-700">
