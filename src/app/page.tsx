@@ -30,9 +30,7 @@ export default function Page() {
       <HeaderNavigation />
       <SportsBettingInterface showSportsContent={false}>
         <LobbyContent />
-        <div className="container py-6">
-          <Promotions />
-        </div>
+
       </SportsBettingInterface>
       <Footer />
       <MobileBottomNav />

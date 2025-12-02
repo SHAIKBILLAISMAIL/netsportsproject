@@ -93,7 +93,7 @@ const Slideshow = () => {
   }, []);
 
   return (
-    <div className="mb-6">
+    <div className="mb-3 md:mb-6">
       <div className="relative overflow-hidden rounded-lg border border-border bg-card">
         <div
           className="flex transition-transform duration-700 ease-out"
@@ -208,7 +208,7 @@ const PromotionalCards = () => {
   ];
 
   return (
-    <div className="mb-4">
+    <div className="mb-2 md:mb-4">
       {/* Promotional Cards - Grid Layout */}
       <div className="grid grid-cols-3 gap-2 sm:gap-3">
         {cards.map((card, index) => (
@@ -227,8 +227,8 @@ const PromotionalCards = () => {
             {/* Subtle Gradient for text readability */}
             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/40" />
 
-            {/* Text Content - Left Aligned */}
-            <div className="absolute inset-0 p-3 flex flex-col justify-center h-full pl-3 sm:pl-4">
+            {/* Text Content - Top Left */}
+            <div className="absolute top-3 left-3 sm:left-4">
               <div className="flex flex-col leading-none">
                 <span className="text-[10px] sm:text-xs md:text-sm lg:text-base font-black text-white drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] uppercase tracking-wide">
                   {card.line1}
@@ -243,19 +243,19 @@ const PromotionalCards = () => {
                   {card.subtitle}
                 </p>
               )}
-
-              {/* Horizontal Separator Line with Arrow */}
-              {card.hasSeparator && (
-                <div className="mt-2 flex items-center gap-1">
-                  <div className="w-12 h-[2px] bg-white shadow-sm" />
-                  <div className="w-4 h-4 rounded-full border-2 border-white flex items-center justify-center">
-                    <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </div>
-                </div>
-              )}
             </div>
+
+            {/* Horizontal Separator Line with Arrow - Fixed Position at Bottom */}
+            {card.hasSeparator && (
+              <div className="absolute bottom-3 left-3 sm:left-4 flex items-center gap-1">
+                <div className="w-12 sm:w-16 h-[2px] bg-white shadow-sm" />
+                <div className="w-4 h-4 rounded-full border-2 border-white flex items-center justify-center">
+                  <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </div>
+            )}
           </div>
         ))}
       </div>
@@ -263,48 +263,30 @@ const PromotionalCards = () => {
   );
 };
 
-// New: VIP Banner Component - Thin sleek design with animated shine
+
+// New: VIP Banner Component - Image-based with animated shine
 const VIPBanner = () => {
   return (
-    <div className="mb-4">
-      {/* VIP Banner - Thin capsule with animated shine */}
-      <div className="relative h-12 rounded-full overflow-hidden bg-black border-2 border-yellow-600/60 shadow-lg">
-        {/* Quilted Diamond Pattern Background */}
-        <div
-          className="absolute inset-0 opacity-20"
-          style={{
-            backgroundImage: `
-              linear-gradient(45deg, transparent 48%, rgba(255,255,255,0.05) 49%, rgba(255,255,255,0.05) 51%, transparent 52%),
-              linear-gradient(-45deg, transparent 48%, rgba(255,255,255,0.05) 49%, rgba(255,255,255,0.05) 51%, transparent 52%)
-            `,
-            backgroundSize: '20px 20px'
-          }}
+    <div className="mb-2 md:mb-4">
+      {/* VIP Banner with image background */}
+      <div className="relative h-12 rounded-full overflow-hidden shadow-lg">
+        {/* Background Image */}
+        <Image
+          src="/vip-banner.jpg"
+          alt="VIP Banner"
+          fill
+          className="object-cover"
+          priority
         />
 
-        {/* Animated Shine Effect - Moving from left to right */}
+        {/* Animated Shine Effect - Moving from left to right automatically */}
         <div className="absolute inset-0 overflow-hidden rounded-full">
           <div
-            className="absolute top-0 left-0 w-full h-full"
+            className="absolute top-0 left-0 w-full h-full animate-shine"
             style={{
-              background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%)',
-              animation: 'shine 3s infinite linear',
-              transform: 'translateX(-100%)',
+              background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.6) 50%, transparent 100%)',
             }}
           />
-        </div>
-
-        {/* Content */}
-        <div className="relative flex items-center justify-center h-full px-4 gap-2">
-          {/* Crown Icon (Left) */}
-          <Crown className="w-6 h-6 text-yellow-500" strokeWidth={2} />
-
-          {/* VIP Text */}
-          <h2 className="text-2xl font-bold tracking-wider text-yellow-500">
-            VIP
-          </h2>
-
-          {/* Crown Icon (Right) */}
-          <Crown className="w-6 h-6 text-yellow-500" strokeWidth={2} />
         </div>
       </div>
 
@@ -318,21 +300,41 @@ const VIPBanner = () => {
             transform: translateX(200%);
           }
         }
+        .animate-shine {
+          animation: shine 3s infinite linear;
+        }
       `}</style>
     </div>
   );
 }
 
-// Message Notification Component - Shows below VIP
+
+// Message Notification Component - Scrolling Marquee
 const MessageNotification = () => {
   return (
-    <div className="mb-4">
-      <div className="bg-gradient-to-r from-orange-600/20 via-orange-500/20 to-orange-600/20 border border-orange-500/40 rounded-lg p-3 flex items-center gap-3 hover:border-orange-500/60 transition-colors cursor-pointer">
-        <MessageSquare className="w-5 h-5 text-orange-500 flex-shrink-0" />
-        <p className="text-sm text-foreground flex-1">
-          JK222 যদি জোনার আপডেট এবং স্বর্ণ থাকে, তাহলে ঘরের *
-        </p>
+    <div className="mb-2 md:mb-4">
+      <div className="bg-black/40 border border-orange-500/20 rounded-lg p-2 flex items-center gap-3 overflow-hidden">
+        <MessageSquare className="w-5 h-5 text-orange-500 flex-shrink-0 ml-1" />
+
+        {/* Scrolling Text Container */}
+        <div className="flex-1 overflow-hidden relative h-6">
+          <div className="absolute whitespace-nowrap animate-marquee flex items-center h-full text-sm text-white/90 font-medium">
+            <span className="mr-8">JK222 যদি জোনার আপডেট এবং স্বর্ণ থাকে, তাহলে ঘরের *</span>
+            <span className="mr-8">Welcome to JK222! Experience the best sports betting and casino games.</span>
+            <span className="mr-8">Get 100% Welcome Bonus on your first deposit!</span>
+          </div>
+        </div>
       </div>
+
+      <style jsx>{`
+        @keyframes marquee {
+          0% { transform: translateX(100%); }
+          100% { transform: translateX(-100%); }
+        }
+        .animate-marquee {
+          animation: marquee 20s linear infinite;
+        }
+      `}</style>
     </div>
   );
 };
@@ -860,7 +862,7 @@ export default function SportsBettingInterface({ initialQuery, showSportsContent
             </SheetContent>
           </Sheet>
         )}
-        <main className="flex-grow p-6 overflow-y-auto">
+        <main className="flex-grow p-3 md:p-6 overflow-y-auto">
           <Slideshow />
           <PromotionalCards />
           <VIPBanner />
