@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Goal, Dribbble, Trophy, Star, Search, Trash2, ShieldCheck, Menu, Pin, PinOff, Crown, Puzzle, Heart, LayoutGrid, Spade, Gamepad2, Bird, Club, Fish, Ticket, Gem, MessageSquare } from 'lucide-react';
@@ -311,6 +311,32 @@ const VIPBanner = () => {
 
 // Message Notification Component - Scrolling Marquee
 const MessageNotification = () => {
+  const [messages, setMessages] = React.useState<string[]>([]);
+
+  const fetchMessages = async () => {
+    try {
+      const res = await fetch('/api/scrolling-messages');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.messages && data.messages.length > 0) {
+          setMessages(data.messages.map((m: any) => m.message));
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch messages:', error);
+    }
+  };
+
+  React.useEffect(() => {
+    fetchMessages();
+
+    // Poll for updates every 30 seconds
+    const interval = setInterval(fetchMessages, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  if (messages.length === 0) return null;
+
   return (
     <div className="mb-2 md:mb-4">
       <div className="bg-black/40 border border-orange-500/20 rounded-lg p-2 flex items-center gap-3 overflow-hidden">
@@ -319,9 +345,9 @@ const MessageNotification = () => {
         {/* Scrolling Text Container */}
         <div className="flex-1 overflow-hidden relative h-6">
           <div className="absolute whitespace-nowrap animate-marquee flex items-center h-full text-sm text-white/90 font-medium">
-            <span className="mr-8">JK222 যদি জোনার আপডেট এবং স্বর্ণ থাকে, তাহলে ঘরের *</span>
-            <span className="mr-8">Welcome to JK222! Experience the best sports betting and casino games.</span>
-            <span className="mr-8">Get 100% Welcome Bonus on your first deposit!</span>
+            {messages.map((msg, index) => (
+              <span key={index} className="mr-8">{msg}</span>
+            ))}
           </div>
         </div>
       </div>

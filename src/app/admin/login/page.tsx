@@ -18,7 +18,6 @@ export default function AdminLoginPage() {
   const [isLogin, setIsLogin] = useState(true);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [secretKey, setSecretKey] = useState("");
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,13 +28,8 @@ export default function AdminLoginPage() {
         return;
       }
     } else {
-      if (!email || !password || !name || !phone || !secretKey) {
-        toast.error("Please fill in all fields including the Secret Key");
-        return;
-      }
-      // Simple security check for demo purposes
-      if (secretKey !== "admin123" && secretKey !== "nicebet2025") {
-        toast.error("Invalid Admin Secret Key. You are not authorized to create an admin account.");
+      if (!email || !password || !name || !phone) {
+        toast.error("Please fill in all fields");
         return;
       }
     }
@@ -146,18 +140,6 @@ export default function AdminLoginPage() {
                     placeholder="+1234567890"
                     disabled={loading}
                     className="h-10"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="secret" className="text-red-500 font-medium">Admin Secret Key</Label>
-                  <Input
-                    id="secret"
-                    type="password"
-                    value={secretKey}
-                    onChange={(e) => setSecretKey(e.target.value)}
-                    placeholder="Enter secret key to authorize"
-                    disabled={loading}
-                    className="h-10 border-red-200 focus-visible:ring-red-500"
                   />
                 </div>
               </>

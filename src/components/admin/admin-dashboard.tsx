@@ -80,6 +80,7 @@ export const AdminDashboard = () => {
     { id: "demo-users", label: "Demo Users", icon: Users },
     { id: "user-management", label: "User Management", icon: ShieldCheck },
     { id: "social-contacts", label: "Social Contacts", icon: MessageCircle },
+    { id: "content", label: "Content Management", icon: Megaphone },
     { id: "sports", label: "Sports", icon: Trophy },
     { id: "live", label: "Live", icon: Menu },
     { id: "casino", label: "Casino", icon: Dice6 },
@@ -100,6 +101,8 @@ export const AdminDashboard = () => {
   const handleSectionClick = (id: SectionId) => {
     if (id === "social-contacts") {
       router.push("/admin/social-contacts");
+    } else if (id === "content") {
+      router.push("/admin/content");
     } else {
       setActive(id);
     }
@@ -144,6 +147,7 @@ type SectionId =
   | "analytics"
   | "demo-users"
   | "user-management"
+  | "content"
   | "sports"
   | "live"
   | "casino"

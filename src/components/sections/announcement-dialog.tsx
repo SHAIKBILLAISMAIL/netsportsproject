@@ -7,45 +7,54 @@ import Image from "next/image";
 
 interface AnnouncementSlide {
   id: number;
-  image: string;
+  image?: string;
   title: string;
   description: string;
   buttonText: string;
   buttonLink?: string;
 }
 
-const announcementSlides: AnnouncementSlide[] = [
-  {
-    id: 1,
-    image: "/announcement-1.jpg",
-    title: "Welcome Bonus - $10 Billion",
-    description: "Register now and claim your special welcome bonus! Available for new members only.",
-    buttonText: "Claim Now",
-    buttonLink: "/register"
-  },
-  {
-    id: 2,
-    image: "/announcement-2.jpg",
-    title: "1 Refer = $1000 Bonus",
-    description: "Invite 1 friend and earn up to $1000 bonus instantly. Simple, fast and profitable. Start earning now!",
-    buttonText: "Start Referring",
-    buttonLink: "/promotions"
-  },
-  {
-    id: 3,
-    image: "/announcement-3.jpg",
-    title: "Red Envelope Bonus",
-    description: "Automatically live red envelope bonus! We are taking some time, so come quickly, test and win prizes.",
-    buttonText: "Learn More",
-    buttonLink: "/promotions"
-  }
-];
-
 export function AnnouncementDialog() {
   const [open, setOpen] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [announcementSlides, setAnnouncementSlides] = useState<AnnouncementSlide[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch announcements from API
+  const fetchAnnouncements = async () => {
+    try {
+      const res = await fetch('/api/announcements');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.announcements && data.announcements.length > 0) {
+          setAnnouncementSlides(data.announcements.map((a: any) => ({
+            id: a.id,
+            image: a.imageUrl,
+            title: a.title,
+            description: a.description,
+            buttonText: a.buttonText,
+            buttonLink: a.buttonLink,
+          })));
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch announcements:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
+    fetchAnnouncements();
+
+    // Poll for updates every 30 seconds
+    const interval = setInterval(fetchAnnouncements, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (loading || announcementSlides.length === 0) return;
+
     // Check if user has already seen the announcement today
     const lastSeen = localStorage.getItem("announcement_last_seen");
     const today = new Date().toDateString();
@@ -58,7 +67,7 @@ export function AnnouncementDialog() {
 
       return () => clearTimeout(timer);
     }
-  }, []);
+  }, [loading, announcementSlides]);
 
   const handleClose = () => {
     setOpen(false);
@@ -81,6 +90,11 @@ export function AnnouncementDialog() {
   };
 
   const currentAnnouncement = announcementSlides[currentSlide];
+
+  // Don't render if no announcements or still loading
+  if (loading || !currentAnnouncement) {
+    return null;
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -171,8 +185,8 @@ export function AnnouncementDialog() {
                 key={index}
                 onClick={() => goToSlide(index)}
                 className={`h-2 rounded-full transition-all duration-300 ${index === currentSlide
-                    ? "w-8 bg-white"
-                    : "w-2 bg-white/40 hover:bg-white/60"
+                  ? "w-8 bg-white"
+                  : "w-2 bg-white/40 hover:bg-white/60"
                   }`}
               />
             ))}

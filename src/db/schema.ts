@@ -200,3 +200,27 @@ export const demoTrades = sqliteTable('demo_trades', {
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
   closedAt: integer('closed_at', { mode: 'timestamp' }),
 });
+
+// Announcements table for popup announcements
+export const announcements = sqliteTable('announcements', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  title: text('title').notNull(),
+  description: text('description').notNull(),
+  imageUrl: text('image_url'),
+  buttonText: text('button_text').notNull().default('Learn More'),
+  buttonLink: text('button_link'),
+  orderIndex: integer('order_index').notNull().default(0),
+  isActive: integer('is_active', { mode: 'boolean' }).notNull().default(true),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+});
+
+// Scrolling messages table for notification banner
+export const scrollingMessages = sqliteTable('scrolling_messages', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  message: text('message').notNull(),
+  isActive: integer('is_active', { mode: 'boolean' }).notNull().default(true),
+  orderIndex: integer('order_index').notNull().default(0),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+});
