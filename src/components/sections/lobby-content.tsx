@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { Flame, ThumbsUp, LayoutGrid, Spade, Trophy, Gamepad2, Bird, Club, Fish, Ticket, ChevronLeft, ChevronRight, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { toast } from 'sonner';
 
 // Types
 export interface Game {
@@ -440,9 +441,45 @@ export const categories: CategorySection[] = [
 
 const GameCard = ({ game, sectionId }: { game: Game; sectionId: string }) => {
     const [isFavorite, setIsFavorite] = useState(false);
+    const router = useRouter();
+
+    // Instant authentication check using localStorage (no API delay)
+    const isAuthenticated = () => {
+        if (typeof window === 'undefined') return false;
+        const token = localStorage.getItem('bearer_token');
+        return !!token;
+    };
+
+    const handleGameClick = () => {
+        // Instant check - no delay
+        if (!isAuthenticated()) {
+            toast.info("Please login to play games");
+            router.push('/login');
+            return;
+        }
+
+        // User is logged in
+        toast.success(`Launching ${game.name}...`);
+    };
+
+    const handleFavoriteClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
+
+        if (!isAuthenticated()) {
+            toast.info("Please login to add favorites");
+            router.push('/login');
+            return;
+        }
+
+        setIsFavorite(!isFavorite);
+        toast.success(isFavorite ? "Removed from favorites" : "Added to favorites");
+    };
 
     return (
-        <div className="relative group flex-shrink-0 w-28 md:w-32 cursor-pointer">
+        <div
+            className="relative group flex-shrink-0 w-28 md:w-32 cursor-pointer"
+            onClick={handleGameClick}
+        >
             <div className="relative overflow-hidden rounded-xl border border-border bg-card aspect-[3/4]">
                 <Image
                     src={game.image}
@@ -475,10 +512,7 @@ const GameCard = ({ game, sectionId }: { game: Game; sectionId: string }) => {
 
                 {/* Favorite Button */}
                 <button
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        setIsFavorite(!isFavorite);
-                    }}
+                    onClick={handleFavoriteClick}
                     className="absolute top-1.5 right-1.5 p-1.5 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-sm transition-colors z-10"
                 >
                     <Heart className={`w-3.5 h-3.5 ${isFavorite ? 'fill-white text-white' : 'text-white'}`} />

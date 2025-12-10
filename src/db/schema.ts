@@ -73,6 +73,7 @@ export const userBalances = sqliteTable('user_balances', {
   userId: text('user_id').notNull().unique().references(() => user.id, { onDelete: 'cascade' }),
   coins: integer('coins').notNull().default(0),
   role: text('role').notNull().default('user'),
+  agentId: text('agent_id').references(() => user.id, { onDelete: 'set null' }), // Which agent manages this user
   createdAt: text('created_at').notNull(),
   updatedAt: text('updated_at').notNull(),
 });

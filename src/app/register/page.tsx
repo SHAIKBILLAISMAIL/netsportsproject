@@ -1,16 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
+import { Gift } from "lucide-react";
+import { toast } from "sonner";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [referralCode, setReferralCode] = useState(searchParams?.get("ref") || ""); // Get from URL or empty
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -29,27 +33,68 @@ export default function RegisterPage() {
     }
 
     setLoading(true);
-    const { error } = await authClient.signUp.email({
-      email,
-      name,
-      password,
-    });
-    setLoading(false);
 
-    if (error) {
-      if (error.code === "USER_ALREADY_EXISTS") {
-        setError("Email already registered. Please login instead.");
-      } else if (error.message?.includes("Password")) {
-        setError(error.message);
-      } else {
-        setError("Registration failed. Please try again.");
+    try {
+      // First, sign up the user
+      const { error: signUpError } = await authClient.signUp.email({
+        email,
+        name,
+        password,
+      });
+
+      if (signUpError) {
+        if (signUpError.code === "USER_ALREADY_EXISTS") {
+          setError("Email already registered. Please login instead.");
+        } else if (signUpError.message?.includes("Password")) {
+          setError(signUpError.message);
+        } else {
+          setError("Registration failed. Please try again.");
+        }
+        setLoading(false);
+        return;
       }
-      return;
-    }
 
-    // Clear announcement flag so popup shows after registration
-    localStorage.removeItem("announcement_last_seen");
-    router.push("/");
+      // If referral code is provided, process it
+      if (referralCode && referralCode.trim() !== '') {
+        try {
+          // Wait a bit for token to be set
+          await new Promise(resolve => setTimeout(resolve, 500));
+          const token = localStorage.getItem("bearer_token");
+
+          console.log('Applying referral code:', referralCode.trim());
+
+          const response = await fetch('/api/referral/apply', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+            body: JSON.stringify({ referralCode: referralCode.trim() }),
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            console.log('✅ Referral code applied successfully:', data);
+            toast.success('Referral code applied! You have been assigned to an agent.');
+          } else {
+            console.warn('Referral code application failed, but registration succeeded');
+          }
+        } catch (refError) {
+          console.warn('Error applying referral code:', refError);
+          // Don't fail registration if referral fails
+        }
+      } else {
+        // No referral code - user will be auto-assigned by the server hook
+        console.log('✅ User created! Auto-assignment handled by server.');
+      }
+
+      // Clear announcement flag so popup shows after registration
+      localStorage.removeItem("announcement_last_seen");
+      router.push("/");
+    } catch (err) {
+      setError("Registration failed. Please try again.");
+      setLoading(false);
+    }
   };
 
   return (
@@ -108,6 +153,21 @@ export default function RegisterPage() {
                 required
                 autoComplete="off"
               />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm flex items-center gap-2">
+                <Gift className="h-4 w-4 text-primary" />
+                Referral Code <span className="text-xs text-muted-foreground">(Optional)</span>
+              </label>
+              <input
+                type="text"
+                className="w-full rounded-md border border-border bg-input px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[var(--color-ring)]"
+                value={referralCode}
+                onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+                placeholder="Enter referral code"
+                autoComplete="off"
+              />
+              <p className="mt-1 text-xs text-muted-foreground">Have a referral code? Enter it to get assigned to an agent!</p>
             </div>
             <button
               type="submit"

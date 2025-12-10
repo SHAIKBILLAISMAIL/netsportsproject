@@ -1,22 +1,10 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Coins, CreditCard, Smartphone, CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { Coins, CreditCard, Smartphone, CheckCircle, XCircle, Loader2, ChevronLeft, History, Headphones, AlertTriangle } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-
-interface CoinPackage {
-  id: string;
-  name: string;
-  coins: number;
-  price: number;
-}
-
-interface PaymentMethod {
-  id: string;
-  name: string;
-  enabled: boolean;
-}
+import Image from 'next/image';
 
 interface BuyCoinsDialogProps {
   open: boolean;
@@ -24,237 +12,249 @@ interface BuyCoinsDialogProps {
   onSuccess?: () => void;
 }
 
+const DEPOSIT_AMOUNTS = [100, 200, 500, 1000, 3000, 5000, 10000, 15000, 20000, 25000];
+
 export const BuyCoinsDialog = ({ open, onOpenChange, onSuccess }: BuyCoinsDialogProps) => {
-  const [packages, setPackages] = useState<CoinPackage[]>([]);
-  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
-  const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
-  const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [selectedMethod, setSelectedMethod] = useState<string>('bkash');
+  const [selectedChannel, setSelectedChannel] = useState<string>('bkash_vip');
+  const [amount, setAmount] = useState<number | ''>('');
+  const [selectedPromotion, setSelectedPromotion] = useState<string>('none');
   const [processing, setProcessing] = useState(false);
-  const [step, setStep] = useState<'select' | 'payment' | 'processing' | 'success' | 'error'>('select');
+  const [step, setStep] = useState<'select' | 'processing' | 'success' | 'error'>('select');
 
-  useEffect(() => {
-    if (open) {
-      fetchPackages();
-      setStep('select');
-      setSelectedPackage(null);
-      setSelectedMethod(null);
-    }
-  }, [open]);
-
-  const fetchPackages = async () => {
-    try {
-      setLoading(true);
-      const res = await fetch('/api/payments/create-order');
-      if (!res.ok) throw new Error('Failed to load packages');
-      const data = await res.json();
-      setPackages(data.packages || []);
-      setPaymentMethods(data.paymentMethods || []);
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to load packages');
-    } finally {
-      setLoading(false);
-    }
+  const handleAmountSelect = (val: number) => {
+    setAmount(val);
   };
 
-  const handlePurchase = async () => {
-    if (!selectedPackage || !selectedMethod) {
-      toast.error('Please select a package and payment method');
+  const handleNext = async () => {
+    if (!amount || Number(amount) < 100) {
+      toast.error('Please enter a valid amount (min 100)');
       return;
     }
 
+    setProcessing(true);
+    setStep('processing');
+
     try {
-      setProcessing(true);
-      setStep('processing');
-
-      const token = localStorage.getItem('bearer_token');
-      
-      // Create order
-      const orderRes = await fetch('/api/payments/create-order', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({
-          packageId: selectedPackage,
-          paymentMethod: selectedMethod,
-        }),
-      });
-
-      if (!orderRes.ok) throw new Error('Failed to create order');
-      const orderData = await orderRes.json();
-
-      // Simulate payment processing (in production, redirect to payment gateway)
+      // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 2000));
 
-      // Process payment
-      const pkg = packages.find(p => p.id === selectedPackage);
-      const processRes = await fetch('/api/payments/process', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({
-          orderId: orderData.order.orderId,
-          coins: pkg?.coins,
-          amount: pkg?.price,
-          paymentMethod: selectedMethod,
-        }),
-      });
-
-      if (!processRes.ok) throw new Error('Payment processing failed');
-      const processData = await processRes.json();
-
+      // In a real implementation, this would create an order and redirect to payment gateway
       setStep('success');
-      toast.success(`Successfully purchased ${pkg?.coins} coins!`);
-      
-      // Delay before closing and calling success callback
+      toast.success('Deposit initiated successfully!');
+
       setTimeout(() => {
         onOpenChange(false);
         onSuccess?.();
+        setStep('select');
+        setAmount('');
       }, 2000);
-    } catch (error: any) {
+    } catch (error) {
       setStep('error');
-      toast.error(error.message || 'Payment failed');
     } finally {
       setProcessing(false);
     }
   };
 
-  const selectedPkg = packages.find(p => p.id === selectedPackage);
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Coins className="text-primary" size={24} />
-            Buy Coins
-          </DialogTitle>
-        </DialogHeader>
-
-        {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="animate-spin text-primary" size={32} />
+      <DialogContent className="max-w-md p-0 overflow-hidden h-[90vh] flex flex-col bg-[#f5f5f5] text-black">
+        {/* Header */}
+        <div className="bg-[#1a1a1a] text-white p-4 flex items-center justify-between shrink-0">
+          <button onClick={() => onOpenChange(false)} className="p-1">
+            <ChevronLeft size={24} />
+          </button>
+          <h2 className="text-lg font-bold">Deposit</h2>
+          <div className="flex gap-4">
+            <History size={24} />
+            <Headphones size={24} />
           </div>
-        ) : step === 'select' || step === 'payment' ? (
-          <div className="space-y-6 py-4">
-            {/* Package Selection */}
-            <div>
-              <h3 className="mb-3 text-sm font-semibold">Select Package</h3>
-              <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-                {packages.map((pkg) => (
-                  <button
-                    key={pkg.id}
-                    onClick={() => setSelectedPackage(pkg.id)}
-                    className={`rounded-lg border-2 p-4 text-center transition-all ${
-                      selectedPackage === pkg.id
-                        ? 'border-primary bg-primary/10'
-                        : 'border-border bg-card hover:border-primary/50'
-                    }`}
-                  >
-                    <div className="mb-2 flex items-center justify-center">
-                      <Coins className={selectedPackage === pkg.id ? 'text-primary' : 'text-muted-foreground'} size={24} />
-                    </div>
-                    <div className="text-lg font-bold">{pkg.coins.toLocaleString()}</div>
-                    <div className="text-xs text-muted-foreground">{pkg.name}</div>
-                    <div className="mt-2 text-sm font-semibold text-primary">${pkg.price}</div>
-                  </button>
-                ))}
-              </div>
-            </div>
+        </div>
 
-            {/* Payment Method Selection */}
-            {selectedPackage && (
-              <div>
-                <h3 className="mb-3 text-sm font-semibold">Payment Method</h3>
-                <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-                  {paymentMethods.map((method) => (
-                    <button
-                      key={method.id}
-                      onClick={() => method.enabled && setSelectedMethod(method.id)}
-                      disabled={!method.enabled}
-                      className={`flex items-center gap-3 rounded-lg border-2 p-4 transition-all ${
-                        selectedMethod === method.id
-                          ? 'border-primary bg-primary/10'
-                          : 'border-border bg-card hover:border-primary/50'
-                      } ${!method.enabled ? 'cursor-not-allowed opacity-50' : ''}`}
-                    >
-                      {method.id === 'stripe' ? (
-                        <CreditCard size={20} className={selectedMethod === method.id ? 'text-primary' : 'text-muted-foreground'} />
-                      ) : (
-                        <Smartphone size={20} className={selectedMethod === method.id ? 'text-primary' : 'text-muted-foreground'} />
-                      )}
-                      <div className="text-left">
-                        <div className="text-sm font-semibold">{method.name}</div>
-                        {!method.enabled && <div className="text-xs text-muted-foreground">Coming Soon</div>}
+        <div className="flex-1 overflow-y-auto p-4 space-y-6">
+          {step === 'select' ? (
+            <>
+              {/* Deposit Method */}
+              <section>
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-1 h-4 bg-orange-500 rounded-full"></div>
+                  <h3 className="font-bold text-gray-800">Deposit Method</h3>
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setSelectedMethod('bkash')}
+                    className={`relative flex-1 p-3 rounded-lg border-2 flex flex-col items-center gap-2 bg-white transition-all ${selectedMethod === 'bkash' ? 'border-red-500 bg-red-50' : 'border-gray-200'}`}
+                  >
+                    {selectedMethod === 'bkash' && (
+                      <div className="absolute top-0 right-0 w-4 h-4 bg-red-500 rounded-bl-lg flex items-center justify-center">
+                        <CheckCircle size={10} className="text-white" />
                       </div>
+                    )}
+                    <div className="w-10 h-10 bg-pink-600 rounded-lg flex items-center justify-center text-white font-bold text-xs">Bkash</div>
+                    <span className="text-xs font-bold text-gray-700">Bkash VIP</span>
+                    <span className="absolute top-0 left-0 bg-orange-500 text-white text-[10px] px-1 rounded-br-lg">HOT</span>
+                  </button>
+                  <button
+                    onClick={() => setSelectedMethod('nagad')}
+                    className={`relative flex-1 p-3 rounded-lg border-2 flex flex-col items-center gap-2 bg-white transition-all ${selectedMethod === 'nagad' ? 'border-red-500 bg-red-50' : 'border-gray-200'}`}
+                  >
+                    {selectedMethod === 'nagad' && (
+                      <div className="absolute top-0 right-0 w-4 h-4 bg-red-500 rounded-bl-lg flex items-center justify-center">
+                        <CheckCircle size={10} className="text-white" />
+                      </div>
+                    )}
+                    <div className="w-10 h-10 bg-orange-600 rounded-lg flex items-center justify-center text-white font-bold text-xs">Nagad</div>
+                    <span className="text-xs font-bold text-gray-700">NAGAD VIP</span>
+                    <span className="absolute top-0 left-0 bg-orange-500 text-white text-[10px] px-1 rounded-br-lg">HOT</span>
+                  </button>
+                </div>
+              </section>
+
+              {/* Warning Note */}
+              <div className="bg-white p-3 rounded-lg border border-red-100">
+                <p className="text-xs text-red-600 leading-relaxed font-medium">
+                  <span className="font-bold text-lg mr-1">! ! !</span>
+                  NOTE : অনুগ্রহ করে আপনার ডিপোজিট করার পরে অবশ্যই আপনার Trx-ID আইডি সাবমিট করবেন। তাহলে খুব দ্রুত আপনার একাউন্টের মধ্যে টাকা যোগ হয়ে যাবে।
+                  <span className="font-bold text-lg ml-1">! ! !</span>
+                </p>
+              </div>
+
+              {/* Payment Channels */}
+              <section>
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-1 h-4 bg-green-500 rounded-full"></div>
+                  <h3 className="font-bold text-gray-800">Payment channels</h3>
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setSelectedChannel('bkash_vip')}
+                    className={`relative p-3 rounded-lg border-2 bg-white min-w-[120px] text-left transition-all ${selectedChannel === 'bkash_vip' ? 'border-red-500' : 'border-gray-200'}`}
+                  >
+                    {selectedChannel === 'bkash_vip' && (
+                      <div className="absolute top-0 right-0 w-4 h-4 bg-red-500 rounded-bl-lg flex items-center justify-center">
+                        <CheckCircle size={10} className="text-white" />
+                      </div>
+                    )}
+                    <span className="text-xs font-bold text-red-800">Bkash VIP | GDP</span>
+                    <span className="absolute top-0 left-0 bg-orange-500 text-white text-[10px] px-1 rounded-br-lg">HOT</span>
+                  </button>
+                </div>
+
+                {/* Repeated Warning Note */}
+                <div className="mt-4 bg-white p-3 rounded-lg border border-red-100">
+                  <p className="text-xs text-red-600 leading-relaxed font-medium">
+                    <span className="font-bold text-lg mr-1">! ! !</span>
+                    NOTE : অনুগ্রহ করে আপনার ডিপোজিট করার পরে অবশ্যই আপনার Trx-ID আইডি সাবমিট করবেন। তাহলে খুব দ্রুত আপনার একাউন্টের মধ্যে টাকা যোগ হয়ে যাবে।
+                    <span className="font-bold text-lg ml-1">! ! !</span>
+                  </p>
+                </div>
+              </section>
+
+              {/* Deposit Amounts */}
+              <section>
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-1 h-4 bg-purple-500 rounded-full"></div>
+                  <h3 className="font-bold text-gray-800">Deposit Amounts</h3>
+                </div>
+                <div className="grid grid-cols-4 gap-2 mb-3">
+                  {DEPOSIT_AMOUNTS.map((val) => (
+                    <button
+                      key={val}
+                      onClick={() => handleAmountSelect(val)}
+                      className={`py-2 px-1 rounded border text-sm font-semibold transition-all ${amount === val ? 'bg-red-500 text-white border-red-500' : 'bg-white text-gray-700 border-gray-200 hover:border-red-300'}`}
+                    >
+                      {val.toLocaleString()}
                     </button>
                   ))}
                 </div>
-              </div>
-            )}
+                <div className="bg-white border border-gray-200 rounded-lg p-3 flex items-center">
+                  <span className="text-gray-500 font-bold mr-2">৳</span>
+                  <input
+                    type="number"
+                    placeholder="100 - 25,000"
+                    value={amount}
+                    onChange={(e) => setAmount(Number(e.target.value))}
+                    className="w-full outline-none text-gray-800 font-semibold bg-transparent"
+                  />
+                </div>
+                <div className="mt-2 text-red-800 font-medium text-sm">
+                  Deposit Info: 24/24
+                </div>
+              </section>
 
-            {/* Summary and Action */}
-            {selectedPackage && selectedMethod && (
-              <div className="rounded-lg border border-border bg-muted/20 p-4">
-                <h3 className="mb-3 text-sm font-semibold">Order Summary</h3>
-                <div className="space-y-2 text-sm">
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Package:</span>
-                    <span className="font-semibold">{selectedPkg?.name}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Coins:</span>
-                    <span className="font-semibold">{selectedPkg?.coins.toLocaleString()}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Payment Method:</span>
-                    <span className="font-semibold">{paymentMethods.find(m => m.id === selectedMethod)?.name}</span>
-                  </div>
-                  <div className="border-t border-border pt-2">
-                    <div className="flex items-center justify-between text-lg">
-                      <span className="font-bold">Total:</span>
-                      <span className="font-bold text-primary">${selectedPkg?.price}</span>
+              {/* Promotions */}
+              <section>
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-1 h-4 bg-pink-500 rounded-full"></div>
+                  <h3 className="font-bold text-gray-800">Promotions</h3>
+                </div>
+                <div className="space-y-3">
+                  <div
+                    onClick={() => setSelectedPromotion('promo1')}
+                    className="bg-white p-3 rounded-lg border border-gray-200 flex items-center gap-3 cursor-pointer"
+                  >
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedPromotion === 'promo1' ? 'border-red-500' : 'border-gray-300'}`}>
+                      {selectedPromotion === 'promo1' && <div className="w-2.5 h-2.5 bg-red-500 rounded-full" />}
                     </div>
+                    <div className="flex-1">
+                      <p className="text-xs text-gray-500">আপনার প্রথম ডিপোজিটে ৮২% বোনাস উপ...</p>
+                    </div>
+                    <span className="text-xs text-gray-400">≥ ৳ 100.00</span>
+                  </div>
+
+                  <div
+                    onClick={() => setSelectedPromotion('promo2')}
+                    className="bg-white p-3 rounded-lg border border-gray-200 flex items-center gap-3 cursor-pointer"
+                  >
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedPromotion === 'promo2' ? 'border-red-500' : 'border-gray-300'}`}>
+                      {selectedPromotion === 'promo2' && <div className="w-2.5 h-2.5 bg-red-500 rounded-full" />}
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-xs text-gray-500">আপনার প্রথম ডিপোজিটে ৮২% বোনাস উপ...</p>
+                    </div>
+                    <span className="text-xs text-gray-400">≥ ৳ 100.00</span>
+                  </div>
+
+                  <div
+                    onClick={() => setSelectedPromotion('none')}
+                    className={`bg-red-50 p-3 rounded-lg border flex items-center gap-3 cursor-pointer ${selectedPromotion === 'none' ? 'border-red-200' : 'border-transparent'}`}
+                  >
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedPromotion === 'none' ? 'border-red-500' : 'border-gray-300'}`}>
+                      {selectedPromotion === 'none' && <div className="w-2.5 h-2.5 bg-red-500 rounded-full" />}
+                    </div>
+                    <p className="text-xs font-bold text-gray-800">Do not participate in any promotions</p>
                   </div>
                 </div>
-                <button
-                  onClick={handlePurchase}
-                  disabled={processing}
-                  className="mt-4 w-full rounded-md bg-primary px-4 py-3 font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
-                >
-                  {processing ? 'Processing...' : 'Complete Purchase'}
-                </button>
-              </div>
-            )}
-          </div>
-        ) : step === 'processing' ? (
-          <div className="flex flex-col items-center justify-center py-12">
-            <Loader2 className="mb-4 animate-spin text-primary" size={48} />
-            <h3 className="text-lg font-semibold">Processing Payment...</h3>
-            <p className="mt-2 text-sm text-muted-foreground">Please wait while we process your transaction</p>
-          </div>
-        ) : step === 'success' ? (
-          <div className="flex flex-col items-center justify-center py-12">
-            <CheckCircle className="mb-4 text-emerald-400" size={64} />
-            <h3 className="text-lg font-semibold">Payment Successful!</h3>
-            <p className="mt-2 text-sm text-muted-foreground">
-              {selectedPkg?.coins.toLocaleString()} coins have been added to your account
-            </p>
-          </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center py-12">
-            <XCircle className="mb-4 text-red-400" size={64} />
-            <h3 className="text-lg font-semibold">Payment Failed</h3>
-            <p className="mt-2 text-sm text-muted-foreground">Please try again or contact support</p>
+              </section>
+            </>
+          ) : step === 'processing' ? (
+            <div className="flex flex-col items-center justify-center h-full">
+              <Loader2 className="animate-spin text-red-500 mb-4" size={48} />
+              <h3 className="text-lg font-bold text-gray-800">Processing...</h3>
+            </div>
+          ) : step === 'success' ? (
+            <div className="flex flex-col items-center justify-center h-full">
+              <CheckCircle className="text-green-500 mb-4" size={64} />
+              <h3 className="text-lg font-bold text-gray-800">Deposit Successful!</h3>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center h-full">
+              <XCircle className="text-red-500 mb-4" size={64} />
+              <h3 className="text-lg font-bold text-gray-800">Deposit Failed</h3>
+              <button onClick={() => setStep('select')} className="mt-4 px-4 py-2 bg-gray-200 rounded-lg text-sm font-bold">Try Again</button>
+            </div>
+          )}
+        </div>
+
+        {/* Footer Button */}
+        {step === 'select' && (
+          <div className="p-4 bg-white border-t border-gray-200 shrink-0">
             <button
-              onClick={() => setStep('select')}
-              className="mt-4 rounded-md border border-border px-4 py-2 text-sm"
+              onClick={handleNext}
+              className="w-full bg-[#d4d4d4] hover:bg-red-500 hover:text-white text-white font-bold py-3 rounded-full transition-colors flex items-center justify-center gap-2"
+              style={{ backgroundColor: amount ? '#ef4444' : '#d4d4d4' }}
             >
-              Try Again
+              Next
             </button>
           </div>
         )}

@@ -116,11 +116,7 @@ export const HeaderNavigation = () => {
                           <Link href="/en/bets" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted">
                             <Coins size={14} />My Bets
                           </Link>
-                          {userRole === 'admin' && (
-                            <Link href="/admin" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted">
-                              <Shield size={14} />Admin Panel
-                            </Link>
-                          )}
+
                           <button onClick={() => { setUserMenuOpen(false); handleSignOut(); }} className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-red-400 transition-colors hover:bg-muted">
                             <LogOut size={14} />Sign Out
                           </button>
@@ -173,9 +169,7 @@ export const HeaderNavigation = () => {
                     <MobileLink href="/en/account" onClick={() => setMobileMenuOpen(false)}>Account</MobileLink>
                     <MobileLink href="/en/wallet" onClick={() => setMobileMenuOpen(false)}>Wallet</MobileLink>
                     <MobileLink href="/en/bets" onClick={() => setMobileMenuOpen(false)}>My Bets</MobileLink>
-                    {userRole === 'admin' && (
-                      <MobileLink href="/admin" onClick={() => setMobileMenuOpen(false)}>Admin Panel</MobileLink>
-                    )}
+
                   </>
                 )}
               </div>

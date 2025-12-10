@@ -3,11 +3,14 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Goal, Dribbble, Trophy, Star, Search, Trash2, ShieldCheck, Menu, Pin, PinOff, Crown, Puzzle, Heart, LayoutGrid, Spade, Gamepad2, Bird, Club, Fish, Ticket, Gem, MessageSquare } from 'lucide-react';
+import { toast } from 'sonner';
 
 // NOTE: The following imports are placeholders for shadcn/ui components.
 // Ensure you have these components set up in your project.
 import { Button } from '@/components/ui/button';
+import { BuyCoinsDialog } from '@/components/payments/buy-coins-dialog';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -181,7 +184,16 @@ const DateSegments = ({ active, onChange }: { active: string; onChange: (v: stri
 };
 
 // New: Partner/Sponsor logos marquee scrolling from right to left
-const PromotionalCards = () => {
+const PromotionalCards = ({ onDeposit }: { onDeposit: () => void }) => {
+  const router = useRouter();
+
+  // Instant authentication check using localStorage (no API delay)
+  const isAuthenticated = () => {
+    if (typeof window === 'undefined') return false;
+    const token = localStorage.getItem('bearer_token');
+    return !!token;
+  };
+
   // Card data with text and images
   const cards = [
     {
@@ -189,23 +201,48 @@ const PromotionalCards = () => {
       line1: 'DEPOSIT',
       line2: 'NOW!',
       subtitle: 'GET MORE BONUS',
-      hasSeparator: true
+      hasSeparator: true,
+      action: 'deposit'
     },
     {
       image: 'https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/render/image/public/document-uploads/invite-friend.45f0732f-1764351594679.png?width=8000&height=8000&resize=contain',
       line1: 'INVITE',
       line2: 'FRIENDS',
       subtitle: '',
-      hasSeparator: true
+      hasSeparator: true,
+      action: 'invite'
     },
     {
       image: 'https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/render/image/public/document-uploads/promo-code.46231421-1764351594261.png?width=8000&height=8000&resize=contain',
       line1: 'PROMO',
       line2: 'CODE',
       subtitle: '',
-      hasSeparator: true
+      hasSeparator: true,
+      action: 'promo'
     },
   ];
+
+  const handleCardClick = (action: string) => {
+    // Instant check - no delay
+    if (!isAuthenticated()) {
+      toast.info("Please login to access this feature");
+      router.push('/login');
+      return;
+    }
+
+    // User is logged in - navigate to appropriate page
+    switch (action) {
+      case 'deposit':
+        onDeposit();
+        break;
+      case 'invite':
+        router.push('/en/invite');
+        break;
+      case 'promo':
+        router.push('/en/redeem');
+        break;
+    }
+  };
 
   return (
     <div className="mb-2 md:mb-4">
@@ -215,6 +252,7 @@ const PromotionalCards = () => {
           <div
             key={index}
             className="relative w-full aspect-[3/2] rounded-xl overflow-hidden hover:scale-105 transition-transform cursor-pointer shadow-lg group"
+            onClick={() => handleCardClick(card.action)}
           >
             {/* Background Image */}
             <Image
@@ -689,7 +727,9 @@ export default function SportsBettingInterface({ initialQuery, showSportsContent
   // New state for live odds
   const [upcomingMatches, setUpcomingMatches] = useState<any[]>([]);
   const [loadingOdds, setLoadingOdds] = useState<boolean>(false);
+
   const [oddsError, setOddsError] = useState<string | null>(null);
+  const [buyCoinsOpen, setBuyCoinsOpen] = useState(false);
 
   // Fetch live odds when sport category changes
   useEffect(() => {
@@ -890,7 +930,7 @@ export default function SportsBettingInterface({ initialQuery, showSportsContent
         )}
         <main className="flex-grow p-3 md:p-6 overflow-y-auto">
           <Slideshow />
-          <PromotionalCards />
+          <PromotionalCards onDeposit={() => setBuyCoinsOpen(true)} />
           <VIPBanner />
           <MessageNotification />
           <GamesNavigation />
@@ -908,6 +948,7 @@ export default function SportsBettingInterface({ initialQuery, showSportsContent
           removeBet={handleRemoveBet}
           clearBets={handleClearAllBets}
         />
+        <BuyCoinsDialog open={buyCoinsOpen} onOpenChange={setBuyCoinsOpen} />
       </div>
     </TooltipProvider>
   );

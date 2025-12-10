@@ -78,7 +78,13 @@ export default function PromotionsPage() {
         if (res.ok) {
           const data = await res.json();
           if (data.promotions && Array.isArray(data.promotions)) {
-            allPromotions = [...allPromotions, ...data.promotions];
+            // Fix: Replace GK222 with JK222 in dynamic content
+            const fixedPromotions = data.promotions.map((p: any) => ({
+              ...p,
+              title: p.title ? p.title.replace(/GK222/gi, "JK222") : p.title,
+              description: p.description ? p.description.replace(/GK222/gi, "JK222") : p.description,
+            }));
+            allPromotions = [...allPromotions, ...fixedPromotions];
           }
         }
       } catch (apiError) {

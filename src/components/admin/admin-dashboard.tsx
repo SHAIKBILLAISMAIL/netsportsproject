@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { useSession } from "@/lib/auth-client";
 import { DemoUserManagement } from "@/components/admin/demo-user-management";
 import { UserAgentCRUD } from "@/components/admin/user-agent-crud";
+import { AgentManagement } from "@/components/admin/agent-management";
 import { PromotionsManagement } from "@/components/admin/promotions-management";
 import { useRouter } from "next/navigation";
 
@@ -78,7 +79,9 @@ export const AdminDashboard = () => {
     { id: "coins", label: "Coin Management", icon: Coins },
     { id: "analytics", label: "Analytics & Graphs", icon: BarChart3 },
     { id: "demo-users", label: "Demo Users", icon: Users },
+
     { id: "user-management", label: "User Management", icon: ShieldCheck },
+    { id: "agent-management", label: "Agent Management", icon: Users },
     { id: "social-contacts", label: "Social Contacts", icon: MessageCircle },
     { id: "content", label: "Content Management", icon: Megaphone },
     { id: "sports", label: "Sports", icon: Trophy },
@@ -147,6 +150,7 @@ type SectionId =
   | "analytics"
   | "demo-users"
   | "user-management"
+  | "agent-management"
   | "content"
   | "sports"
   | "live"
@@ -209,6 +213,8 @@ const SectionRenderer = ({ active }: { active: SectionId }) => {
       return <DemoUserManagement />;
     case "user-management":
       return <UserAgentCRUD />;
+    case "agent-management":
+      return <AgentManagement />;
     case "users":
       return <UsersSection />;
     case "bets":
